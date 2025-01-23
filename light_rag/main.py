@@ -21,6 +21,8 @@ BOOKS_DIR = "../books"
 PROCESS_FLAG = os.path.join(WORKING_DIR, ".processed")
 ISLAMIC_QUESTIONS = [
     "What is the Sunni path?",
+    "Why are pride and arrogance considered dangerous in Islam?",
+    "Is tobacco-smoking permissible in Islam?",
 ]
 
 
