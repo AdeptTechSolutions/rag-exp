@@ -85,13 +85,18 @@ rag = LightRAG(
 colorama.init()
 
 if os.path.exists(BOOKS_DIR):
-    islamic_texts = process_documents_folder(BOOKS_DIR)
-    if islamic_texts:
-        rag.insert(islamic_texts)
-        print("\nSuccessfully loaded Islamic texts into RAG!\n")
+    if not os.path.exists(PROCESS_FLAG):
+        islamic_texts = process_documents_folder(BOOKS_DIR)
+        if islamic_texts:
+            rag.insert(islamic_texts)
+            with open(PROCESS_FLAG, "w") as f:
+                f.write("processed")
+            print("\nSuccessfully loaded Islamic texts into RAG!\n")
+        else:
+            print("No processable texts found. Exiting.")
+            exit()
     else:
-        print("No processable texts found. Exiting.")
-        exit()
+        print("\nDocuments already processed. Skipping insertion.\n")
 else:
     print(f"Books directory '{BOOKS_DIR}' not found. Exiting.")
     exit()
@@ -101,8 +106,13 @@ for question in ISLAMIC_QUESTIONS:
     print(f"\n{Fore.GREEN}Question:{Style.RESET_ALL} {question}")
 
     for mode in ["naive", "local", "global", "hybrid"]:
+        # context = rag.query(
+        #     question, param=QueryParam(mode=mode, only_need_context=True)
+        # )
         answer = rag.query(question, param=QueryParam(mode=mode))
+
         print(f"\n{Fore.BLUE}Mode:{Style.RESET_ALL} {mode}")
+        # print(f"Context: {context}")
         print(f"Answer: {answer}")
 
     print("-" * 80)
