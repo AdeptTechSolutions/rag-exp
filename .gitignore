@@ -1,6 +1,7 @@
 **/islamic_texts/
 .vscode/
 books/
+**/processed/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
