@@ -20,7 +20,6 @@ ollama
 openai
 trulens
 trulens-providers-openai
-trulens-utils
 oracledb
 psycopg-pool
 psycopg[binary,pool]
