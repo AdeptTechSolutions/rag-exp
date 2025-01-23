@@ -1,6 +1,6 @@
 lightrag-hku
 tqdm
-textract
+textract==1.6.3
 
 accelerate
 aioboto3
