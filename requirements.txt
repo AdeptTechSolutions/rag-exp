@@ -37,4 +37,5 @@ tiktoken
 torch
 tqdm
 transformers
+bitsandbytes
 xxhash
