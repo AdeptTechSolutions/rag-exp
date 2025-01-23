@@ -12,12 +12,12 @@ from lightrag.llm import (
     openai_embedding,
 )
 from lightrag.utils import EmbeddingFunc
-from transformers import AutoModel, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModel, AutoTokenizer
 
 load_dotenv(dotenv_path="../.env")
 
-WORKING_DIR = "./islamic_texts"
-BOOKS_DIR = "../data"
+WORKING_DIR = "./processed"
+BOOKS_DIR = "../data_mini"
 PROCESS_FLAG = os.path.join(WORKING_DIR, ".processed")
 ISLAMIC_QUESTIONS = [
     "What is the Sunni path?",
@@ -70,13 +70,13 @@ async def embedding_func(texts: list[str]) -> np.ndarray:
     )
 
 
-quantization_config = BitsAndBytesConfig(load_in_4bit=True)
+# quantization_config = BitsAndBytesConfig(load_in_4bit=True)
 rag = LightRAG(
     working_dir=WORKING_DIR,
-    llm_model_func=gpt_4o_mini_complete,
-    # embedding_func=EmbeddingFunc(
-    #     embedding_dim=768, max_token_size=2048, func=embedding_func
-    # ),
+    llm_model_func=llm_model_func,
+    embedding_func=EmbeddingFunc(
+        embedding_dim=768, max_token_size=2048, func=embedding_func
+    ),
     # llm_model_kwargs={"quantization_config": quantization_config, "device_map": "auto"},
     # addon_params={"insert_batch_size": 20},
     # llm_model_max_async=30,
