@@ -72,10 +72,10 @@ async def embedding_func(texts: list[str]) -> np.ndarray:
 
 rag = LightRAG(
     working_dir=WORKING_DIR,
-    llm_model_func=llm_model_func,
-    embedding_func=EmbeddingFunc(
-        embedding_dim=768, max_token_size=2048, func=embedding_func
-    ),
+    llm_model_func=gpt_4o_mini_complete,
+    # embedding_func=EmbeddingFunc(
+    #     embedding_dim=768, max_token_size=2048, func=embedding_func
+    # ),
 )
 
 colorama.init()
