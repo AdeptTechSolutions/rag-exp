@@ -86,7 +86,7 @@ class DocumentIngester:
                 chunk.metadata.update(
                     {
                         "source": os.path.basename(chunk.metadata["source"]),
-                        "page": chunk.metadata.get("page", 0),
+                        "page": chunk.metadata.get("page", 0) + 1,
                         "chunk_size": self.chunk_size,
                         "chunk_overlap": self.chunk_overlap,
                     }
