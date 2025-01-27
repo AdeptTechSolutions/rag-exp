@@ -46,6 +46,8 @@ class RAGModel:
             google_api_key=os.getenv("GEMINI_API_KEY"),
         )
 
+        self._init_collection()
+
         self.vector_store = QdrantVectorStore(
             client=self.client,
             collection_name=self.collection_name,
@@ -72,6 +74,19 @@ class RAGModel:
             | self.llm
             | StrOutputParser()
         )
+
+    def _init_collection(self):
+        collections = self.client.get_collections().collections
+        exists = any(col.name == self.collection_name for col in collections)
+
+        if not exists:
+            self.client.create_collection(
+                collection_name=self.collection_name,
+                vectors_config=models.VectorParams(
+                    size=768,
+                    distance=models.Distance.COSINE,
+                ),
+            )
 
     def _get_context(self, question: str) -> str:
         docs_and_scores = self._get_relevant_documents_with_scores(question)
