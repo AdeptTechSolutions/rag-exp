@@ -1,6 +1,4 @@
-import logging
 import os
-import warnings
 from pathlib import Path
 from typing import List, Optional
 
@@ -75,7 +73,16 @@ class DocumentIngester:
 
         for pdf_path in data_path.glob("*.pdf"):
             loader = PyMuPDFLoader(str(pdf_path))
-            documents.extend(loader.load())
+            docs = loader.load()
+
+            for doc in docs:
+                doc.metadata.update(
+                    {
+                        "source": pdf_path.name,
+                        "page": doc.metadata.get("page", 0) + 1,
+                    }
+                )
+            documents.extend(docs)
 
         chunks = self._prepare_chunks(documents)
         self._store_chunks(chunks)
@@ -91,8 +98,8 @@ class DocumentIngester:
 
                 chunk.metadata.update(
                     {
-                        "source": os.path.basename(chunk.metadata["source"]),
-                        "page": chunk.metadata.get("page", 0) + 1,
+                        "source": doc.metadata["source"],
+                        "page": doc.metadata["page"],
                         "chunk_size": self.chunk_size,
                         "chunk_overlap": self.chunk_overlap,
                     }
@@ -104,11 +111,12 @@ class DocumentIngester:
     def _store_chunks(self, chunks: List[Document]) -> None:
         try:
             self.client.delete_collection(self.collection_name)
+            self._initialize_collection()
         except Exception:
             pass
 
-        self._initialize_collection()
-        self.vector_store.add_documents(chunks)
+        if chunks:
+            self.vector_store.add_documents(chunks)
 
     def get_collection_info(self) -> Optional[dict]:
         try:

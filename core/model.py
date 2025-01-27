@@ -80,48 +80,29 @@ class RAGModel:
     def _get_relevant_documents_with_scores(
         self, question: str
     ) -> List[Tuple[Document, float]]:
-        query_vector = self.embeddings.embed_query(question)
-
-        response = self.client.search(
-            collection_name=self.collection_name,
-            query_vector=query_vector,
-            limit=self.top_k * 2,
-            score_threshold=0.0,
-            with_payload=True,
-            with_vectors=True,
+        docs_and_scores = self.vector_store.similarity_search_with_relevance_scores(
+            question, k=self.top_k
         )
 
-        docs_and_scores = []
-        for scored_point in response:
-            try:
-                metadata = {
-                    "source": scored_point.payload.get("source"),
-                    "page": scored_point.payload.get("page"),
-                }
-                doc = Document(
-                    page_content=scored_point.payload.get("page_content", ""),
-                    metadata=metadata,
-                )
-                docs_and_scores.append((doc, scored_point.score))
-            except Exception:
-                continue
-
-        docs_and_scores.sort(key=lambda x: x[1], reverse=True)
-        return docs_and_scores[: self.top_k]
+        return [(doc, score) for doc, score in docs_and_scores if score > 0]
 
     def get_answer(self, question: str) -> Tuple[str, Dict]:
         docs_and_scores = self._get_relevant_documents_with_scores(question)
         answer = self.chain.invoke(question)
 
+        source_document = None
         if docs_and_scores:
             best_doc, score = docs_and_scores[0]
             source_document = {
-                "source": best_doc.metadata["source"],
-                "page": best_doc.metadata["page"],
+                "source": best_doc.metadata.get("source", "Unknown"),
+                "page": best_doc.metadata.get("page", 0),
                 "content": best_doc.page_content,
                 "score": score,
             }
-        else:
-            source_document = None
 
-        return answer, source_document
+        return answer, source_document or {
+            "source": None,
+            "page": None,
+            "content": None,
+            "score": 0.0,
+        }
