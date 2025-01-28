@@ -8,7 +8,7 @@ from PIL import Image
 from core import RAGModel
 
 st.set_page_config(
-    page_title="RAG Exploration",
+    page_title="Islamic Texts",
     page_icon="🔍",
     layout="centered",
     initial_sidebar_state="collapsed",
