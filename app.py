@@ -46,7 +46,7 @@ def display_pdf_page(pdf_path: str, page_num: int):
 
 def main():
     st.markdown(
-        "<h1 style='text-align: center;'>📚 RAG Exploration</h1>",
+        "<h1 style='text-align: center;'>📚 Islamic Texts</h1>",
         unsafe_allow_html=True,
     )
 
@@ -100,10 +100,7 @@ def main():
                     with col2:
                         display_pdf_page(source["source"], source["page"])
                 else:
-                    st.warning(
-                        "⚠️ No specific source found for this response. "
-                        "The answer is based on general knowledge from the documents."
-                    )
+                    st.warning("⚠️ No specific source found for this response.")
 
 
 if __name__ == "__main__":

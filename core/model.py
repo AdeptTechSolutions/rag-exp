@@ -14,21 +14,25 @@ load_dotenv()
 
 RAG_PROMPT_TEMPLATE = """You are a helpful assistant that provides accurate, informative answers based on the given context.
 
-Use the following pieces of context to answer the question at the end.
+Use the following pieces of context to answer the question at the end. Follow these guidelines:
+
+1. If the question is COMPLETELY unrelated to the context (e.g., asking about mathematics when the context is about history), append "NO_RELEVANT_SOURCE" to your response.
+2. If the question is even partially related to the topics in the context, provide an answer based on the available information WITHOUT adding "NO_RELEVANT_SOURCE".
+3. If you're unsure about relevance, err on the side of providing an answer without the special token.
 
 Context:
 {context}
 
 Question: {question}
 
-Answer (provide a clear, direct answer based on the context above):"""
+Answer (provide a clear, direct answer based on any relevant information in the context above):"""
 
 
 class RAGModel:
     def __init__(
         self,
         collection_name: str = "pdf_collection",
-        temperature: float = 0.1,
+        temperature: float = 0.0,
         top_k: int = 4,
     ):
         self.collection_name = collection_name
@@ -55,7 +59,7 @@ class RAGModel:
         )
 
         self.llm = ChatGoogleGenerativeAI(
-            model="gemini-1.5-flash",
+            model="gemini-1.5-pro",
             temperature=self.temperature,
             google_api_key=os.getenv("GEMINI_API_KEY"),
         )
@@ -105,15 +109,25 @@ class RAGModel:
         docs_and_scores = self._get_relevant_documents_with_scores(question)
         answer = self.chain.invoke(question)
 
+        if "NO_RELEVANT_SOURCE" in answer:
+            answer = answer.replace("NO_RELEVANT_SOURCE", "").strip()
+            return answer, {
+                "source": None,
+                "page": None,
+                "content": None,
+                "score": 0.0,
+            }
+
         source_document = None
         if docs_and_scores:
             best_doc, score = docs_and_scores[0]
-            source_document = {
-                "source": best_doc.metadata.get("source", "Unknown"),
-                "page": best_doc.metadata.get("page", 0),
-                "content": best_doc.page_content,
-                "score": score,
-            }
+            if score > 0.3:
+                source_document = {
+                    "source": best_doc.metadata.get("source", "Unknown"),
+                    "page": best_doc.metadata.get("page", 0),
+                    "content": best_doc.page_content,
+                    "score": score,
+                }
 
         return answer, source_document or {
             "source": None,
