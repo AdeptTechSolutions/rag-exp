@@ -7,7 +7,9 @@ from dotenv import load_dotenv
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_core.documents import Document
+from langchain_experimental.text_splitter import SemanticChunker
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_openai.embeddings import OpenAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient, models
 
@@ -47,12 +49,13 @@ class DocumentIngester:
             embedding=self.embeddings,
         )
 
-        self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=self.chunk_size,
-            chunk_overlap=self.chunk_overlap,
-            separators=["\n\n", "\n", " ", ""],
-            length_function=len,
-        )
+        # self.text_splitter = RecursiveCharacterTextSplitter(
+        #     chunk_size=self.chunk_size,
+        #     chunk_overlap=self.chunk_overlap,
+        #     separators=["\n\n", "\n", " ", ""],
+        #     length_function=len,
+        # )
+        self.text_splitter = SemanticChunker(GoogleGenerativeAIEmbeddings())
 
     def _initialize_collection(self) -> None:
         collections = self.client.get_collections()
