@@ -6,6 +6,7 @@ import streamlit as st
 from PIL import Image
 
 from core import RAGModel
+from core.ingestion import DocumentIngester
 
 st.set_page_config(
     page_title="Islamic Texts",
@@ -13,6 +14,17 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="collapsed",
 )
+
+
+def initialize_collection():
+    if "initialized" not in st.session_state:
+        with st.spinner("Initializing document collection..."):
+            ingester = DocumentIngester()
+            collection_info = ingester.get_collection_info()
+            if not collection_info:
+                ingester.ingest_documents("data_mini")
+                st.success("Document collection initialized successfully!")
+            st.session_state.initialized = True
 
 
 def load_logo():
@@ -45,6 +57,11 @@ def display_pdf_page(pdf_path: str, page_num: int):
 
 
 def main():
+    initialize_collection()
+
+    if not st.session_state.initialized:
+        st.stop()
+
     st.markdown(
         "<h1 style='text-align: center;'>📚 Islamic Texts</h1>",
         unsafe_allow_html=True,
@@ -61,7 +78,7 @@ def main():
 
     if submit_button and query:
         with st.spinner("Generating response..."):
-            model = RAGModel()
+            model = RAGModel(top_k=6)
             answer, source = model.get_answer(query)
 
             st.write("#### Answer")

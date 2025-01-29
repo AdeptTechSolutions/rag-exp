@@ -55,7 +55,7 @@ class DocumentIngester:
         #     separators=["\n\n", "\n", " ", ""],
         #     length_function=len,
         # )
-        self.text_splitter = SemanticChunker(GoogleGenerativeAIEmbeddings())
+        self.text_splitter = SemanticChunker(self.embeddings)
 
     def _initialize_collection(self) -> None:
         collections = self.client.get_collections()
